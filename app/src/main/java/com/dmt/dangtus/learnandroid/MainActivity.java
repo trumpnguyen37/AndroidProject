@@ -1,68 +1,80 @@
 package com.dmt.dangtus.learnandroid;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.dmt.dangtus.learnandroid.adapter.ComputerAdapter;
+import com.dmt.dangtus.learnandroid.model.Category;
+import com.dmt.dangtus.learnandroid.model.Computer;
+import com.dmt.dangtus.learnandroid.sqlite.DanhMucDao;
+import com.dmt.dangtus.learnandroid.sqlite.MayTinhDao;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ListView lvDanhBa;
-    private ContentResolver resolver;
-    private List<String> danhBaList = new ArrayList<>();
-    private List<Long> idList = new ArrayList<>();
+    private ListView lvComputer;
+    private MayTinhDao mayTinhDao;
+    private ComputerAdapter computerAdapter;
+    private Button btnThem;
+    private AutoCompleteTextView autoCompleteTextView;
+    private ArrayAdapter<String> categoryAdapter;
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    @SuppressLint("Range")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lvDanhBa = (ListView) findViewById(R.id.danhBaListView);
+        anhXa();
 
-        if(checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[] {Manifest.permission.READ_CONTACTS}, 100);
+        getItemListView();
+
+        getItemCategory();
+    }
+
+    private void getItemCategory() {
+        DanhMucDao danhMucDao = new DanhMucDao(this);
+        List<Category> categoryList = danhMucDao.getAll();
+
+        // lay ten danh muc dua vao combobox
+        List<String> tenDanhMucList = new ArrayList<>();
+        for (Category category: categoryList) {
+            tenDanhMucList.add(category.getName());
         }
 
-        resolver = getContentResolver();
+        categoryAdapter = new ArrayAdapter<String>(this, R.layout.item_combobox, tenDanhMucList);
+        autoCompleteTextView.setAdapter(categoryAdapter);
 
-        //select
-        Cursor cursor = resolver.query(ContactsContract.Contacts.CONTENT_URI,
-                new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID},
-                null, null, null);
-        while(cursor.moveToNext()) {
-            danhBaList.add(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)));
-            idList.add(cursor.getLong(cursor.getColumnIndex(ContactsContract.Contacts._ID)));
-        }
-
-        ArrayAdapter<String> adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, danhBaList);
-        lvDanhBa.setAdapter(adapter);
-
-        //set su kien khi click vao list view
-        lvDanhBa.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        //bat su kien khi chon
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                long id = idList.get(i);
-                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                intent.putExtra("id", id);
-                startActivity(intent);
+                String item = adapterView.getItemAtPosition(i).toString();
+                Toast.makeText(MainActivity.this, item, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void getItemListView() {
+        mayTinhDao = new MayTinhDao(this);
+        List<Computer> computerList = mayTinhDao.getAll();
+
+        computerAdapter = new ComputerAdapter(this, R.layout.item_computer, computerList);
+        lvComputer.setAdapter(computerAdapter);
+    }
+
+    private void anhXa() {
+        lvComputer = findViewById(R.id.computerListView);
+        btnThem = findViewById(R.id.themMoiButton);
+        autoCompleteTextView = findViewById(R.id.danhMucCombobox);
     }
 }
