@@ -1,4 +1,4 @@
-package com.dmt.dangtus.learnandroid;
+package com.example.quanlysinhvienfirebase;
 
 import org.junit.Test;
 

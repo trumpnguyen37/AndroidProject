@@ -1,4 +1,4 @@
-package com.dmt.dangtus.learnandroid;
+package com.example.quanlysinhvienfirebase;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.dmt.dangtus.learnandroid", appContext.getPackageName());
+        assertEquals("com.example.quanlysinhvienfirebase", appContext.getPackageName());
     }
 }
